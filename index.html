@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level-1 Schedule</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: yellow;
+        }
+
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: lightblue;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        #header h1 {
+            margin: 0;
+        }
+
+        .menu {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+        }
+
+        .menu li {
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        .menu li:hover {
+            text-decoration: underline;
+        }
+
+        #closeBtn {
+            cursor: pointer;
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        #closeBtn:hover {
+            background-color: darkred;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: lightblue;
+            color: white;
+        }
+
+        td {
+            background-color: lightyellow;
+        }
+
+        input {
+            margin: 5px;
+        }
+
+        .task-bar {
+            background-color: lightcoral;
+            color: white;
+            text-align: center;
+            line-height: 20px;
+            border-radius: 5px;
+            padding: 3px;
+            margin-top: 5px;
+        }
+
+        button {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: lightblue;
+        }
+    </style>
+</head>
+<body>
+
+<div id="header">
+    <h1>Level-1 Schedule</h1>
+    <div>
+        <ul class="menu">
+            <li id="saveAsMenu">Save As</li>
+            <li id="shareMenu">Share</li>
+            <li id="exportMenu">Export</li>
+            <li id="settingsMenu">Settings</li>
+            <li id="helpMenu">Help</li>
+            <li id="aboutMenu">About</li>
+        </ul>
+    </div>
+    <button id="closeBtn">X</button>
+</div>
+
+<!-- Content Section -->
+<label for="customerName">Customer Name:</label>
+<input type="text" id="customerName" placeholder="Enter customer's name">
+
+<label for="projectTitle">Project Title:</label>
+<input type="text" id="projectTitle" placeholder="Enter project title">
+
+<label for="startDate">Project Start Date:</label>
+<input type="date" id="startDate" value="2024-03-01">
+<button id="startVoiceInputStart">Voice Command for Start Date</button>
+
+<label for="endDate">Project End Date:</label>
+<input type="date" id="endDate" value="2026-05-31">
+<button id="startVoiceInputEnd">Voice Command for End Date</button>
+
+<button id="generateCalendar">Generate Calendar</button>
+
+<h2>Project Tasks</h2>
+<div>
+    <label for="taskName">Task Name:</label>
+    <input type="text" id="taskName" placeholder="Enter task name">
+
+    <label for="taskStartMonth">Task Start Month:</label>
+    <input type="month" id="taskStartMonth">
+    
+    <label for="taskEndMonth">Task End Month:</label>
+    <input type="month" id="taskEndMonth">
+
+    <button id="addTask">Add Task</button>
+</div>
+
+<!-- Project Calendar Table -->
+<table id="projectCalendar">
+    <thead>
+        <tr id="yearRow"></tr>
+    </thead>
+    <tbody>
+        <tr id="monthRow"></tr>
+        <tr id="numberRow"></tr>
+        <!-- Each task will be visualized in its own row -->
+    </tbody>
+</table>
+
+<h2>Tasks List</h2>
+<table id="tasksList">
+    <thead>
+        <tr>
+            <th>Task Name</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="taskBody"></tbody>
+</table>
+
+<script>
+    document.getElementById('generateCalendar').addEventListener('click', generateCalendar);
+    document.getElementById('addTask').addEventListener('click', addTask);
+    document.getElementById('closeBtn').addEventListener('click', () => window.close());
+    document.getElementById('saveAsMenu').addEventListener('click', saveProjectAs);
+    document.getElementById('shareMenu').addEventListener('click', shareProjectViaEmail);
+    document.getElementById('startVoiceInputStart').addEventListener('click', startVoiceInputStart);
+    document.getElementById('startVoiceInputEnd').addEventListener('click', startVoiceInputEnd);
+
+    let taskList = [];
+    let projectStartDate, projectEndDate; // Project's start and end dates
+
+    function generateCalendar() {
+        const startDateInput = new Date(document.getElementById('startDate').value);
+        const endDateInput = new Date(document.getElementById('endDate').value);
+        
+        projectStartDate = startDateInput;
+        projectEndDate = endDateInput;
+
+        // Clear previous calendar content
+        document.getElementById('yearRow').innerHTML = '';
+        document.getElementById('monthRow').innerHTML = '';
+        document.getElementById('numberRow').innerHTML = '';
+
+        const totalMonths = (endDateInput.getFullYear() - startDateInput.getFullYear()) * 12 + (endDateInput.getMonth() - startDateInput.getMonth()) + 1;
+
+        let monthCounter = 1;
+        for (let i = 0; i < totalMonths; i++) {
+            const monthDate = new Date(startDateInput.getFullYear(), startDateInput.getMonth() + i);
+
+            // Year Row
+            const yearCell = document.createElement('th');
+            yearCell.innerText = monthDate.getFullYear();
+            document.getElementById('yearRow').appendChild(yearCell);
+
+            // Month Row
+            const monthCell = document.createElement('td');
+            monthCell.innerText = monthDate.toLocaleString('default', { month: 'long' });
+            document.getElementById('monthRow').appendChild(monthCell);
+
+            // Month Number Row
+            const numberCell = document.createElement('td');
+            numberCell.innerText = monthCounter++;
+            document.getElementById('numberRow').appendChild(numberCell);
+        }
+
+        renderTaskVisualization(); // Re-render tasks visualization after generating calendar
+    }
+
+    function addTask() {
+        const taskName = document.getElementById('taskName').value;
+        const taskStartMonth = document.getElementById('taskStartMonth').value;
+        const taskEndMonth = document.getElementById('taskEndMonth').value;
+
+        if (taskName && taskStartMonth && taskEndMonth) {
+            // Convert the selected months into Date objects for comparison
+            const startDate = new Date(taskStartMonth + "-01");
+            const endDate = new Date(taskEndMonth + "-01");
+
+            // Add the task to the task list
+            const task = { taskName, startDate, endDate };
+            taskList.push(task);
+            renderTaskList();
+            renderTaskVisualization();
+        }
+    }
+
+    function renderTaskList() {
+        const taskBody = document.getElementById('taskBody');
+        taskBody.innerHTML = '';
+        taskList.forEach((task, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = ` 
+                <td>${task.taskName}</td>
+                <td>${task.startDate.toLocaleDateString()}</td>
+                <td>${task.endDate.toLocaleDateString()}</td>
+                <td>
+                    <button onclick="editTask(${index})">Edit</button>
+                    <button onclick="removeTask(${index})">Delete</button>
+                </td>`;
+            taskBody.appendChild(row);
+        });
+    }
+
+    function editTask(index) {
+        const task = taskList[index];
+        document.getElementById('taskName').value = task.taskName;
+        document.getElementById('taskStartMonth').value = task.startDate.toISOString().slice(0, 7); // Set as 'YYYY-MM'
+        document.getElementById('taskEndMonth').value = task.endDate.toISOString().slice(0, 7); // Set as 'YYYY-MM'
+    }
+
+    function removeTask(index) {
+        taskList.splice(index, 1);
+        renderTaskList();
+        renderTaskVisualization();
+    }
+
+    function renderTaskVisualization() {
+        const taskVisualizationRow = document.getElementById("projectCalendar").getElementsByTagName("tbody")[0];
+        
+        // Clear previous task visualizations
+        const existingRows = taskVisualizationRow.querySelectorAll('.task-row');
+        existingRows.forEach(row => row.remove());
+
+        taskList.forEach((task) => {
+            const taskStartDate = task.startDate;
+            const taskEndDate = task.endDate;
+
+            // Calculate the number of months the task spans
+            const startMonthIndex = (taskStartDate.getFullYear() - projectStartDate.getFullYear()) * 12 + taskStartDate.getMonth();
+            const endMonthIndex = (taskEndDate.getFullYear() - projectStartDate.getFullYear()) * 12 + taskEndDate.getMonth();
+
+            const taskRow = document.createElement('tr');
+            taskRow.classList.add('task-row');
+            
+            // Create empty cells for visualization and fill the task span with a task bar
+            for (let i = 0; i < startMonthIndex; i++) {
+                taskRow.appendChild(document.createElement('td'));
+            }
+
+            const taskBarCell = document.createElement('td');
+            taskBarCell.colSpan = endMonthIndex - startMonthIndex + 1;
+            const taskBar = document.createElement('div');
+            taskBar.classList.add('task-bar');
+            taskBar.innerText = task.taskName;
+            taskBarCell.appendChild(taskBar);
+            taskRow.appendChild(taskBarCell);
+
+            // Fill remaining months with empty cells
+            for (let i = endMonthIndex + 1; i < (projectEndDate.getFullYear() * 12 + projectEndDate.getMonth()); i++) {
+                taskRow.appendChild(document.createElement('td'));
+            }
+
+            taskVisualizationRow.appendChild(taskRow);
+        });
+    }
+
+    function saveProjectAs() {
+        alert('Save as PPT and Excel functionality will be implemented later.');
+    }
+
+    function shareProjectViaEmail() {
+        alert('Sharing functionality is not yet implemented.');
+    }
+
+    // Speech Recognition Implementation
+    let recognition;
+
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = function(event) {
+            let voiceResult = event.results[0][0].transcript.toLowerCase();
+            console.log("Voice Command Recognized: " + voiceResult);
+
+            // Handle Start Date Voice Command
+            if (document.activeElement.id === "startDate") {
+                // Try to convert voice input into date
+                let date = new Date(voiceResult);
+                if (!isNaN(date)) {
+                    document.getElementById('startDate').value = date.toISOString().slice(0, 10);
+                }
+            }
+
+            // Handle End Date Voice Command
+            if (document.activeElement.id === "endDate") {
+                // Try to convert voice input into date
+                let date = new Date(voiceResult);
+                if (!isNaN(date)) {
+                    document.getElementById('endDate').value = date.toISOString().slice(0, 10);
+                }
+            }
+        };
+
+        recognition.onerror = function(event) {
+            console.error("Speech Recognition Error: " + event.error);
+        };
+    } else {
+        alert('Speech recognition is not supported in this browser.');
+    }
+
+    // Start Voice Input for Start Date
+    function startVoiceInputStart() {
+        recognition.start();
+        document.getElementById('startDate').focus();
+    }
+
+    // Start Voice Input for End Date
+    function startVoiceInputEnd() {
+        recognition.start();
+        document.getElementById('endDate').focus();
+    }
+</script>
+
+</body>
+</html>
